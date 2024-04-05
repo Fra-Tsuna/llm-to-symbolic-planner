@@ -54,7 +54,7 @@ Build PRP
 cd planner-for-relevant-policies/src/
 ./build_all
 ```
-Setup you OpenAI API key
+Setup your OpenAI API key
 ```
 conda-env config vars set OPENAI_API_KEY=<YOUR API KEY>
 ```
