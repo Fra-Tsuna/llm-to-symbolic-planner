@@ -23,9 +23,9 @@ INIT_STATE = [
     "(full b)",
 ]
 
-PLAN_PATH = "../config/PDDL/sas_plan_adapted"
+PLAN_PATH = "config/PDDL/sas_plan_adapted"
 
-with open("../config/action_schemas.json", "r") as file:
+with open("config/action_schemas.json", "r") as file:
     ACTIONS_SCHEMA = json.load(file)
 
 
@@ -153,4 +153,5 @@ def load_plan(plan_path):
     with open(plan_path, "r") as file:
         temp = file.readlines()
         plan.extend(line.replace("\n", "") for line in temp)
+    print(plan)
     return plan

@@ -14,7 +14,7 @@ from process_states import (
 )
 
 
-PLAN_PATH = "../config/PDDL/sas_plan_adapted"
+PLAN_PATH = "config/PDDL/sas_plan_adapted"
 
 questions_first_set = [
     "What are you doing now?",

@@ -7,7 +7,7 @@ from GPT_Agents import FluentsExtractor, GPTChat
 from process_states import evaluate_metric, get_current_state, load_plan
 
 
-PLAN_PATH = "../config/PDDL/sas_plan_adapted"
+PLAN_PATH = "config/PDDL/sas_plan_adapted"
 WAITING_TIME = 10.0
 
 

@@ -4,27 +4,27 @@ from openai import OpenAI
 
 
 domain = []
-file_path = "../config/PDDL/domain.pddl"
+file_path = "config/PDDL/domain.pddl"
 with open(file_path, "r") as file:
     domain = file.read()
 
 problem = []
-file_path = "../config/PDDL/problem.pddl"
+file_path = "config/PDDL/problem.pddl"
 with open(file_path, "r") as file:
     problem = file.read()
 
 human_policy = []
-file_path = "../config/PDDL/human_policy.pol"
+file_path = "config/PDDL/human_policy.pol"
 with open(file_path, "r") as file:
     human_policy = file.read()
 
 fluents = []
-file_path = "../config/fluents.txt"
+file_path = "config/fluents.txt"
 with open(file_path, "r") as file:
     fluents = file.read()
 
 objects = []
-file_path = "../config/objects.txt"
+file_path = "config/objects.txt"
 with open(file_path, "r") as file:
     objects = file.read()
 
