@@ -28,12 +28,12 @@ Install the necessary Python dependencies:
 conda create -n <YOURENV> python=3.9 dill matplotlib plotly scipy scikit-learn pandas tenacity
 conda activate <YOURENV>
 pip install openai tiktoken
+pip install openai --upgrade
 pip install nltk seaborn pyyaml
 conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia  # GPU
 conda install pytorch torchdata -c pytorch  # CPU
 pip install tensorboard transformers datasets evaluate torchtext
 conda install -c conda-forge spot
-pip install openai --upgrade
 pip install sentencepiece
 pip install chardet
 ```
@@ -137,16 +137,14 @@ should become:
 ```
 To obtain the policy, run:
 ```
-cd config/PDDL/
-../.././planner-for-relevant-policies/src/prp ltlf_domain.pddl ltlf_problem.pddl --dump-policy 2
+./planner-for-relevant-policies/src/prp config/PDDL/ltlf_domain.pddl config/PDDL/ltlf_problem.pddl --dump-policy 2
 ```
 To translate the policy into a human-readable format, run:
 ```
-python2 ../.././planner-for-relevant-policies/prp-scripts/translate_policy.py > human_policy.pol
+python2 ./planner-for-relevant-policies/prp-scripts/translate_policy.py > config/PDDL/human_policy.pol
 ```
 Lastly, we want to prepare the files to give in input to GPT4 to reduce allucinations. Run:
 ```
-cd ../../
 python3 planning/prepare_gpt_inputs.py
 ```
 
