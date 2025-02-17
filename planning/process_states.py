@@ -153,5 +153,4 @@ def load_plan(plan_path):
     with open(plan_path, "r") as file:
         temp = file.readlines()
         plan.extend(line.replace("\n", "") for line in temp)
-    print(plan)
     return plan
