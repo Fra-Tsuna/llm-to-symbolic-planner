@@ -6,6 +6,7 @@ import rich
 from GPT_Agents import FluentsExtractor, GPTChat
 from process_states import evaluate_metric, get_current_state, load_plan
 
+console = rich.console.Console()
 
 PLAN_PATH = "config/PDDL/sas_plan_adapted"
 WAITING_TIME = 10.0
@@ -37,7 +38,6 @@ def get_user_input(prompt, timeout=1):
 
 
 def test_simulate_plan(plan, waiting_time):
-    console = rich.console.Console()
     plan_so_far = []
     psf_returned = []
     system_response = []
@@ -64,7 +64,9 @@ if __name__ == "__main__":
     waiting_time = WAITING_TIME
     plan = load_plan(plan_path)
     system_response, plan_so_far = test_simulate_plan(plan, waiting_time)
+    console.print(f"[bold green]SYSTEM: [/bold green] {system_response}")
 
+    ### DEBUG 
     # extractor = FluentsExtractor()
 
     # fluents = extractor(system_response)

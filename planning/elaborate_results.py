@@ -10,7 +10,7 @@ categories = ["Current_action", "Past_actions", "Future_actions"]
 
 def main(n_exp: int = 15) -> None:
     for category in categories:
-        result_dir = f"../results/{category}"
+        result_dir = f"results/{category}"
 
         hits_list = []
         for i in range(n_exp):
