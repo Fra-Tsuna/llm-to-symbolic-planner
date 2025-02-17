@@ -16,6 +16,16 @@ from process_states import (
 
 PLAN_PATH = "config/PDDL/sas_plan_adapted"
 
+fluents = []
+FLUENTS_PATH = "config/fluents.txt"
+with open(FLUENTS_PATH, "r") as file:
+    fluents = file.read()
+
+objects = []
+OBJECTS_PATH = "config/objects.txt"
+with open(OBJECTS_PATH, "r") as file:
+    objects = file.read()
+
 questions_first_set = [
     "What are you doing now?",
     "What's occupying your time at the moment?",
@@ -51,7 +61,9 @@ questions_dict = {
 
 
 def main(n_exp: int = 15) -> None:
-    extractor = FluentsExtractor()
+    
+    extractor_kwargs = {"fluents": fluents, "objects": objects}
+    extractor = FluentsExtractor(**extractor_kwargs)
 
     plan = load_plan(PLAN_PATH)
 
@@ -72,7 +84,6 @@ def main(n_exp: int = 15) -> None:
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            extractor = FluentsExtractor()
             fluents = extractor(system_response)
             fluents = fluents.split(",")
 

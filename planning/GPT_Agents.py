@@ -1,39 +1,11 @@
 import os
-
 from openai import OpenAI
 
-
-domain = []
-file_path = "config/PDDL/domain.pddl"
-with open(file_path, "r") as file:
-    domain = file.read()
-
-problem = []
-file_path = "config/PDDL/problem.pddl"
-with open(file_path, "r") as file:
-    problem = file.read()
-
-human_policy = []
-file_path = "config/PDDL/human_policy.pol"
-with open(file_path, "r") as file:
-    human_policy = file.read()
-
-fluents = []
-file_path = "config/fluents.txt"
-with open(file_path, "r") as file:
-    fluents = file.read()
-
-objects = []
-file_path = "config/objects.txt"
-with open(file_path, "r") as file:
-    objects = file.read()
-
-
 class GPTChat:
-    def __init__(self):
-        self.domain = domain
-        self.problem = problem
-        self.human_policy = human_policy
+    def __init__(self, **kwargs):
+        self.domain = kwargs["domain"]
+        self.problem = kwargs["problem"]
+        self.human_policy = kwargs["human_policy"]
         self.client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         self.model = "gpt-4-1106-preview"
         self.completion = None
@@ -74,16 +46,16 @@ class GPTChat:
                 },
             ],
             stream=False,
-            temperature=0.0000001,
+            temperature=1e-7,
         )
 
         return completion.choices[0].message.content.replace("\n", "")
 
 
 class FluentsExtractor:
-    def __init__(self):
-        self.fluents = fluents
-        self.objects = objects
+    def __init__(self, **kwargs):
+        self.fluents = kwargs["fluents"]
+        self.objects = kwargs["objects"]
         self.client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         self.model = "gpt-4-1106-preview"
         self.completion = None
@@ -95,9 +67,9 @@ class FluentsExtractor:
                 {
                     "role": "system",
                     "content": f"You are an assistent which is very capable in translating natural language to PDDL fluent. \
-                    You know that all the possible fluents that can occur in this domain are {fluents}, where they appear \
+                    You know that all the possible fluents that can occur in this domain are {self.fluents}, where they appear \
                     in the form of (fluent x - type_of_x y type_of_y), or (fluent x - type_of_x) or (fluent). \
-                    All and only the variables admitted are the followings: {objects}. \
+                    All and only the variables admitted are the followings: {self.objects}. \
                     Your goal is to provide me a set of fluents used ONLY the fluents and objects that I provided you, \
                     given a sentence in a natural language. When answering, do not provide any explanation, just the set of fluents. \
                     When answering, ignore the type of the objects in the fluents.\
@@ -106,7 +78,7 @@ class FluentsExtractor:
                 },
             ],
             stream=False,
-            temperature=0.0000001,
+            temperature=1e-7,
         )
 
         return completion.choices[0].message.content.replace("\n", "")

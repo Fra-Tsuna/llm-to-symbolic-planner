@@ -10,6 +10,22 @@ from process_states import evaluate_metric, get_current_state, load_plan
 PLAN_PATH = "config/PDDL/sas_plan_adapted"
 WAITING_TIME = 10.0
 
+domain = []
+DOMAIN_PATH = "config/PDDL/domain.pddl"
+with open(DOMAIN_PATH, "r") as file:
+    domain = file.read()
+
+problem = []
+PROBLEM_PATH = "config/PDDL/problem.pddl"
+with open(PROBLEM_PATH, "r") as file:
+    problem = file.read()
+
+human_policy = []
+POLICY_PATH = "config/PDDL/human_policy.pol"
+with open(POLICY_PATH, "r") as file:
+    human_policy = file.read()
+
+chat_kwargs = {"domain": domain, "problem": problem, "human_policy": human_policy}
 
 def get_user_input(prompt, timeout=1):
     console = rich.console.Console()
@@ -35,7 +51,7 @@ def test_simulate_plan(plan, waiting_time):
         )
 
         if user_response:
-            chat = GPTChat()
+            chat = GPTChat(**chat_kwargs)
             system_response = chat(plan_so_far, user_response)
             console.print(f"[bold red]ROBOT: [/bold red] {system_response}")
             print("--------------------------------------------------------")
