@@ -47,7 +47,9 @@ pip install ltlf2dfa
 ```
 Install FOND4LTLf
 ```
-pip install git+https://github.com/whitemech/FOND4LTLf.git
+git clone --branch v0.0.3 https://github.com/whitemech/FOND4LTLf.git
+cd FOND4LTLf
+pip install .
 ```
 Build PRP
 ```
