@@ -137,11 +137,11 @@ should become:
 ```
 To obtain the policy, run:
 ```
-./planner-for-relevant-policies/src/prp config/PDDL/ltlf_domain.pddl config/PDDL/ltlf_problem.pddl --dump-policy 2
+./scripts/obtain_policy.sh
 ```
 To translate the policy into a human-readable format, run:
 ```
-python2 ./planner-for-relevant-policies/prp-scripts/translate_policy.py > config/PDDL/human_policy.pol
+./scripts/make_policy_readable.sh
 ```
 Lastly, we want to prepare the files to give in input to GPT4 to reduce allucinations. Run:
 ```
