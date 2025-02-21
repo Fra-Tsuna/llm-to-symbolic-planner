@@ -6,6 +6,12 @@ from std_srvs.srv import Trigger, TriggerResponse
 from GPT_Agents import GPTChat
 import os
 
+GREY = "\033[90m"  # Grey for logdebug
+GREEN = "\033[92m"  # Green for loginfo
+YELLOW = "\033[93m"  # Yellow for logwarn
+RED = "\033[91m"  # Red for logerr
+RESET = "\033[0m"  # Reset to default color
+
 ROOT_DIR = os.path.abspath(__file__ + "/../..")
 PLAN_PATH = ROOT_DIR + "/config/PDDL/sas_plan_adapted"
 
@@ -42,7 +48,7 @@ class Orchestrator:
         self.action_publisher = rospy.Publisher(
             PDDL_ACTIONS_TOPIC, String, queue_size=100
         )
-        rospy.loginfo("Orchestrator Node Initialized")
+        rospy.loginfo(GREEN + "Orchestrator Node Initialized" + RESET)
         self.plan = load_plan(PLAN_PATH)
         chat_kwargs = {
             "domain": domain,
@@ -62,12 +68,12 @@ class Orchestrator:
             self.action_publisher.publish(action_msg)
             ack_msg = rospy.wait_for_message(PARSER_2_ORCH_ACK_TOPIC, String)
             if ack_msg.data == "EXECUTED":
-                rospy.loginfo(f"Action {action} executed")
+                rospy.loginfo(f"{GREY}Action {action} executed{RESET}")
             else:
-                rospy.loginfo(f"User question: {ack_msg.data}")
+                rospy.loginfo(f"{YELLOW}User question{RESET}: {ack_msg.data}")
                 user_response = ack_msg.data
                 system_response = self.chat(plan_so_far, user_response)
-                print(f"Response: {system_response}")
+                rospy.loginfo(f"{GREEN}Robot{RESET}: {system_response}")
                 break
 
 
