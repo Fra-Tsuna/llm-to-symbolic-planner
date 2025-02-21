@@ -115,7 +115,7 @@
             )
     )
 
-    (:action handle_exception
+    (:action handle_exception  ; the meaning of this action is to call human to handle unexpect behaviours
         :parameters (?r - robot ?from - location)
         :precondition (and (robot-at ?r ?from) (unknown))
         :effect (and (cleared ?from) (not (unknown))

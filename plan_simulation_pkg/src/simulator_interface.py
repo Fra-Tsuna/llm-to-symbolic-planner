@@ -91,7 +91,29 @@ class SimInterface:
             "drop_grape": self.drop_grape,
             "handle_exception": self.handle_exception,
             "assest_vine": self.assest_vine,
+            "empty_box": self.empty_box,
         }
+
+    def run(self):
+        rospy.spin()
+
+    def callback(self, sim_action):
+
+        action_type = sim_action.data[0]
+        action_params = sim_action.data[1:]
+
+        if action_type in self.action_mapper_dict:
+            rospy.loginfo(f"{GREY}Executing action: {action_type}{RESET}")
+            self.action_mapper_dict[action_type](action_params)
+        else:
+            rospy.logerr(f"{RED}Action {action_type} not found in action_mapper{RESET}")
+
+        human_question = input(f"{YELLOW}User:{RESET} ")
+        ack = human_question if human_question else "EXECUTED"
+
+        ack_msg = String(ack)
+        rospy.sleep(1)
+        self.ack_publisher.publish(ack_msg)
 
     def reset_initial_pose(self):
         spawn_pose_msg = rospy.wait_for_message(ODOMETRY_TOPIC, Odometry)
@@ -105,8 +127,10 @@ class SimInterface:
         self.initial_pose.orientation.w = -qw
         rospy.sleep(1)
         self.pose_teleport_publisher.publish(self.initial_pose)
+        self.init_parameter_server("torso")
+        self.do_control_loop([0.0], 3)
         self.init_parameter_server("head")
-        self.do_head_control_loop([0.0, 0.0])
+        self.do_control_loop([0.0, 0.0], 50)
         return
 
     def reset_human(self, id=0):
@@ -137,9 +161,6 @@ class SimInterface:
         self.support_pose_teleport_publisher.publish(self.support_pose)
         return
 
-    def run(self):
-        rospy.spin()
-
     def init_parameter_server(self, _name: str):
 
         if _name == "right" or _name == "left":
@@ -157,14 +178,19 @@ class SimInterface:
                 "head_1_joint",
                 "head_2_joint",
             ]
-        else: 
+        elif _name == "torso":
+            self.names = [
+                "torso_lift_joint",
+            ]
+        else:
             rospy.logerr(f"{RED}Invalid name{_name}{RESET}")
+
         rospy.set_param(
             "canopies_simulator/joint_group_velocity_controller/joints", self.names
         )
         return
 
-    def do_arm_control_loop(self, positions):
+    def do_control_loop(self, positions, ctrl_vel_param=50):
         control_loop_rate = rospy.Rate(3)  # 10Hz
         control_loop_time = 2  # Sec
 
@@ -176,13 +202,13 @@ class SimInterface:
 
             # Calculation of new velocities for every joint
             velocity_msg = Float64MultiArray()
-            velocity_msg.data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            velocity_msg.data = [0.0] * len(positions)
             for name in self.names:
                 index_in_joint_state = joint_state.name.index(name)
                 index_in_msg = self.names.index(name)
                 final_pos = positions[index_in_msg]
                 real_pos = joint_state.position[index_in_joint_state]
-                control_velocity = 100 * (final_pos - real_pos)
+                control_velocity = ctrl_vel_param * (final_pos - real_pos)
                 velocity_msg.data[index_in_msg] = control_velocity
 
             self.robot_manipulator_vel_publisher.publish(velocity_msg)
@@ -190,56 +216,8 @@ class SimInterface:
 
         # Stop the joints
         velocity_msg = Float64MultiArray()
-        velocity_msg.data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        velocity_msg.data = [0.0] * len(positions)
         self.robot_manipulator_vel_publisher.publish(velocity_msg)
-        
-    def do_head_control_loop(self, positions):
-        control_loop_rate = rospy.Rate(3)  # 10Hz
-        control_loop_time = 2  # Sec
-
-        now = rospy.Time.now()
-        while rospy.Time.now() < now + rospy.Duration.from_sec(control_loop_time):
-            joint_state = rospy.wait_for_message(
-                "canopies_simulator/joint_states", JointState, 10
-            )
-
-            # Calculation of new velocities for every joint
-            velocity_msg = Float64MultiArray()
-            velocity_msg.data = [0.0, 0.0]
-            for name in self.names:
-                index_in_joint_state = joint_state.name.index(name)
-                index_in_msg = self.names.index(name)
-                final_pos = positions[index_in_msg]
-                real_pos = joint_state.position[index_in_joint_state]
-                control_velocity = 50 * (final_pos - real_pos)
-                velocity_msg.data[index_in_msg] = control_velocity
-
-            self.robot_manipulator_vel_publisher.publish(velocity_msg)
-            control_loop_rate.sleep()
-
-        # Stop the joints
-        velocity_msg = Float64MultiArray()
-        velocity_msg.data = [0.0, 0.0]
-        self.robot_manipulator_vel_publisher.publish(velocity_msg)
-        
-
-    def callback(self, sim_action):
-
-        action_type = sim_action.data[0]
-        action_params = sim_action.data[1:]
-
-        if action_type in self.action_mapper_dict:
-            rospy.loginfo(f"{GREY}Executing action: {action_type}{RESET}")
-            self.action_mapper_dict[action_type](action_params)
-        else:
-            rospy.logerr(f"{RED}Action {action_type} not found in action_mapper{RESET}")
-
-        human_question = input(f"{YELLOW}User:{RESET} ")
-        ack = human_question if human_question else "EXECUTED"
-
-        ack_msg = String(ack)
-        rospy.sleep(1)
-        self.ack_publisher.publish(ack_msg)
 
     def move(self, action_args, speed=0.5, tolerance=0.05):
         from_location, to_location = action_args
@@ -275,28 +253,30 @@ class SimInterface:
 
     def check_grape(self, action_args):
         _ = action_args
-        
+
         self.init_parameter_server("head")
-        self.do_head_control_loop([0.0, 0.3])
-        self.do_head_control_loop([-0.7, 0.3])
-        self.do_head_control_loop([0.7, 0.3])
-        self.do_head_control_loop([0.0, 0.0])
+        self.do_control_loop([0.0, 0.3])
+        self.do_control_loop([-0.7, 0.3])
+        self.do_control_loop([0.7, 0.3])
+        self.do_control_loop([0.0, 0.0])
         _ = action_args
-        
-        
+
         pass
 
     def harvest_grape(self, action_args):
         _ = action_args
 
         self.init_parameter_server("right")
-        self.do_arm_control_loop([0.78, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0])
-        self.do_arm_control_loop([1.2, -1.043, -1.0, -1.243, 1.0, 1.25, 1.0])
-        self.do_arm_control_loop([0.9, 1.043, -1.0, -1.443, -1.24, -0.47, 1.0])
-        self.do_arm_control_loop([-0.98, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0])
+        self.do_control_loop([0.78, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0], 100)
+        self.do_control_loop([1.2, -1.043, -1.0, -1.243, 1.0, 1.25, 1.0], 100)
+        self.do_control_loop([0.9, 1.043, -1.0, -1.443, -1.24, -0.47, 1.0], 100)
+        self.do_control_loop([-0.98, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0], 100)
         return
 
     def drop_grape(self, action_args):
+        pass
+
+    def empty_box(self, action_args):
         pass
 
     def handle_exception(self, action_args):
@@ -311,13 +291,12 @@ class SimInterface:
         return
 
     def assest_vine(self, action_args):
-        # _ = action_args
+        _ = action_args
 
-        # self.init_parameter_server("right")
-        # self.do_control_loop([0.78, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0])
-        # self.do_control_loop([1.2, -1.043, -1.0, -1.243, 1.0, 1.25, 1.0])
-        # self.do_control_loop([0.9, 1.043, -1.0, -1.443, -1.24, -0.47, 1.0])
-        # self.do_control_loop([-0.98, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0])
+        self.init_parameter_server("torso")
+        self.do_control_loop([0.3], 0.8)
+        rospy.sleep(2)
+        self.do_control_loop([0.0], 0.8)
 
         return
 

@@ -38,6 +38,7 @@ class Parser:
             "drop_grape": self.drop_grape,
             "handle_exception": self.handle_exception,
             "assest_vine": self.assest_vine,
+            "empty_box": self.empty_box,
         }
 
     def callback(self, action_msg):
@@ -97,6 +98,9 @@ class Parser:
         return action_msg
 
     def drop_grape(self, action_args):
+        pass
+    
+    def empty_box(self, action_args):
         pass
 
     def handle_exception(self, action_args):
