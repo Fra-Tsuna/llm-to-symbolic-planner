@@ -39,9 +39,9 @@
     )
 
     (:action call_support
-        :parameters (?r - robot ?from - location ?supp - robot)
-        :precondition (and (support ?supp) (robot-at ?r ?from))
-        :effect (and (robot-at ?supp ?from)
+        :parameters (?r - robot ?at - location ?supp - robot ?from - location)
+        :precondition (and (support ?supp) (robot-at ?r ?at) (robot-at ?supp ?from))
+        :effect (and (robot-at ?supp ?at) (not (robot-at ?supp ?from))
               (not(move_executed))
               (call_support_executed)
               (not(empty_box_executed))
@@ -88,7 +88,7 @@
         :parameters (?r - robot ?g - grape ?b - box ?from - location)
         :precondition (and (ripe ?g) (free ?r) (robot-at ?r ?from)
                       (grape-at ?g ?from) (empty ?b) (in ?b ?r))
-        :effect (and (not (free ?r)) (in_hand ?g)
+        :effect (and (not (free ?r)) (in_hand ?g) (not (grape-at ?g ?from))
               (not(move_executed))
               (not(call_support_executed))
               (not(empty_box_executed))
