@@ -1,6 +1,6 @@
 #! /bin/bash
 
-PROJECT_DIR = $(pwd)
+PROJECT_DIR=$(pwd)
 
 ./planner-for-relevant-policies/src/prp \
 "$PROJECT_DIR/config/PDDL/ltlf_domain.pddl" \
