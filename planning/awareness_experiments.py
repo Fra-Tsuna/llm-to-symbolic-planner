@@ -2,7 +2,6 @@ import json
 import os
 import random
 
-import tyro
 from GPT_Agents import FluentsExtractor
 from process_states import (
     evaluate_metric,
@@ -16,15 +15,15 @@ from process_states import (
 
 PLAN_PATH = "config/PDDL/sas_plan_adapted"
 
-fluents = []
+gt_fluents = []
 FLUENTS_PATH = "config/fluents.txt"
 with open(FLUENTS_PATH, "r") as file:
-    fluents = file.read()
+    gt_fluents = file.read()
 
-objects = []
+gt_objects = []
 OBJECTS_PATH = "config/objects.txt"
 with open(OBJECTS_PATH, "r") as file:
-    objects = file.read()
+    gt_objects = file.read()
 
 questions_first_set = [
     "What are you doing now?",
@@ -62,7 +61,7 @@ questions_dict = {
 
 def main(n_exp: int = 15) -> None:
     
-    extractor_kwargs = {"fluents": fluents, "objects": objects}
+    extractor_kwargs = {"fluents": gt_fluents, "objects": gt_objects}
     extractor = FluentsExtractor(**extractor_kwargs)
 
     plan = load_plan(PLAN_PATH)
@@ -84,25 +83,16 @@ def main(n_exp: int = 15) -> None:
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            fluents = extractor(system_response)
-            fluents = fluents.split(",")
+            extracted_fluents = extractor(system_response)
+            extracted_fluents = set(extracted_fluents.split(","))
 
-            meaningful_states = None
-
-            if category == "Current_action":
-                meaningful_states = get_current_state(psf_returned)
-            elif category == "Past_actions":
-                meaningful_states = get_past_states(psf_returned)
-            elif category == "Future_actions":
-                meaningful_states = get_future_states(psf_returned, plan)
-
-            hits = evaluate_metric(meaningful_states, fluents)
+            gamma = evaluate_metric(psf_returned, extracted_fluents, category)
 
             results = {}
             results["user_question"] = question
             results["system_response"] = system_response
-            results["extracted_fluents"] = fluents
-            results["hits"] = hits
+            results["extracted_fluents"] = list(extracted_fluents)
+            results["gamma"] = gamma
 
             output_file = f"{output_dir}/output.json"
             with open(output_file, "w") as file:
@@ -114,4 +104,4 @@ def main(n_exp: int = 15) -> None:
 
 
 if __name__ == "__main__":
-    tyro.cli(main)
+    main()

@@ -49,5 +49,5 @@ output_file = "config/PDDL/sas_plan_adapted"
 simplify_file(input_file, output_file)
 
 input_file = "config/PDDL/human_policy.pol"
-output_file = "config/PDDL/human_policypol"
+output_file = "config/PDDL/human_policy.pol"
 cut_lines_after_keyword(input_file, output_file)

@@ -1,11 +1,13 @@
 import json
 import random
+from typing import Union, List
 
 from GPT_Agents import *
 
 
 INIT_STATE = [
     "(robot-at rob l0)",
+    "(robot-at support0 l0)",
     "(support support0)",
     "(grape-at g0 l0)",
     "(grape-at g1 l1)",
@@ -24,6 +26,23 @@ INIT_STATE = [
 ]
 
 PLAN_PATH = "config/PDDL/sas_plan_adapted"
+
+domain = []
+DOMAIN_PATH = "config/PDDL/domain.pddl"
+with open(DOMAIN_PATH, "r") as file:
+    domain = file.read()
+
+problem = []
+PROBLEM_PATH = "config/PDDL/problem.pddl"
+with open(PROBLEM_PATH, "r") as file:
+    problem = file.read()
+
+human_policy = []
+POLICY_PATH = "config/PDDL/human_policy.pol"
+with open(POLICY_PATH, "r") as file:
+    human_policy = file.read()
+
+chat_kwargs = {"domain": domain, "problem": problem, "human_policy": human_policy}
 
 with open("config/action_schemas.json", "r") as file:
     ACTIONS_SCHEMA = json.load(file)
@@ -54,19 +73,21 @@ def add_fluents(state, add_set):
     for fluent in add_set:
         if fluent not in state:
             state.add(fluent)
+    return state
 
 
 def remove_fluents(state, del_set):
     for fluent in del_set:
         if fluent in state:
             state.remove(fluent)
+    return state
 
 
 def get_next_state(state, action):
     action, add_set, del_set = process_action(action)
 
-    add_fluents(state, add_set)
-    remove_fluents(state, del_set)
+    state=add_fluents(state, add_set)
+    state=remove_fluents(state, del_set)
 
     return state
 
@@ -76,9 +97,9 @@ def get_current_state(plan_so_far):
     state = set(state)
 
     for action in plan_so_far:
-        get_next_state(state, action)
+        state=get_next_state(state, action)
 
-    return [state]
+    return set(state)
 
 
 def get_future_states(plan_so_far, plan):
@@ -96,7 +117,7 @@ def get_future_states(plan_so_far, plan):
         get_next_state(state, action)
         states.append(state)
 
-    return states
+    return set(states)
 
 
 def get_past_states(plan_so_far):
@@ -108,23 +129,56 @@ def get_past_states(plan_so_far):
         get_next_state(state, action)
         states.append(state)
 
-    return states
+    return set(states)
 
 
-def evaluate_metric(real_states, predicted_state):
-    results = 0.0
+def evaluate_metric(
+    plan_so_far_returned, extracted_fluents, category
+):
+    if category == "Current_action":
+        #Equation 1 in the paper
+        real_states = get_current_state(plan_so_far_returned)
+        print("Real states: ", real_states)
+        print("Extracted fluents: ", extracted_fluents)
+        intersection = real_states & extracted_fluents
+        union = real_states | extracted_fluents
+        gamma_present = len(intersection) / len(union) 
+        return gamma_present
 
-    for real_state in real_states:
-        count = 0
-
-        for fluent in predicted_state:
-            if fluent in real_state:
-                count += 1
-
-        results += count / len(predicted_state)
-
-    return results / len(real_states)
-
+    elif category == "Past_actions":
+        #Equation 2 in the paper
+        cumulative_plan = []
+        gamma_past = 0.0
+        t = 0
+        for action in plan_so_far_returned:
+            cumulative_plan.append(action)
+            real_states = get_current_state(cumulative_plan)
+            intersection = real_states & extracted_fluents
+            union = real_states | extracted_fluents
+            gamma_past += len(intersection) / len(union)
+            t+=1
+        gamma_past = gamma_past / t
+        return gamma_past
+    
+    elif category == "Future_actions":
+        #Equation 3 in the paper
+        gt_plan = load_plan(PLAN_PATH)
+        T = len(gt_plan)
+        t = len(plan_so_far_returned)
+        cumulative_plan = plan_so_far_returned.copy()
+        gamma_future = 0.0
+        i = 0
+        for action in gt_plan[t:]:
+            real_states = get_current_state(cumulative_plan)
+            intersection = real_states & extracted_fluents
+            union = real_states | extracted_fluents
+            gamma_future += len(intersection) / len(union)
+            cumulative_plan.append(action)
+            i+=1
+        gamma_future = gamma_future / i
+        return gamma_future
+    else:
+        raise ValueError("Invalid category")
 
 def simulate_plan(plan, question, question_probability=0.25):
     p = question_probability
@@ -138,7 +192,7 @@ def simulate_plan(plan, question, question_probability=0.25):
 
         if random.random() < p:
             user_response = question
-            chat = GPTChat()
+            chat = GPTChat(**chat_kwargs)
             system_response = chat(plan_so_far, user_response)
             break
         else:
