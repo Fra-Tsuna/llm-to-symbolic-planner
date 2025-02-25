@@ -3,6 +3,9 @@ __pycache__/
 .vscode/
 *.py[cod]
 *$py.class
+results/
+planning_old/
+config/PDDL/
 
 # C extensions
 *.so
