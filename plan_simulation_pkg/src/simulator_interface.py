@@ -2,6 +2,7 @@
 
 import rospy
 import numpy as np
+import subprocess
 
 from std_msgs.msg import String, Float64MultiArray
 from plan_simulation_pkg.msg import StringList
@@ -9,22 +10,25 @@ from geometry_msgs.msg import Pose, Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState
 
-from canopies_simulator.srv import teleport_human, teleport_humanRequest
+from canopies_simulator.srv import teleport_human, teleport_humanRequest, BEM
 
 SIM_ACTIONS_TOPIC = "/canopies_simulator/simulator/sim_action"
 SIM_2_PARSER_ACK_TOPIC = "/canopies_simulator/orchestrator/sim_2_pars_ack"
 
-ODOMETRY_TOPIC = "/canopies_simulator/moving_base/odometry"
-TELEPORT_TOPIC = "/canopies_simulator/moving_base/teleport"
-TWIST_TOPIC = "/canopies_simulator/moving_base/twist"
+ODOMETRY_TOPIC = "/canopies_simulator/farming/moving_base/odometry"
+TELEPORT_TOPIC = "/canopies_simulator/farming/moving_base/teleport"
+TWIST_TOPIC = "/canopies_simulator/farming/moving_base/twist"
 
 CONTROLLER_VELOCITIES_TOPIC = (
-    "canopies_simulator/joint_group_velocity_controller/command"
+    "canopies_simulator/farming/joint_group_velocity_controller/command"
 )
 
 HUMAN_TELEPORT_SERVICE = "/canopies_simulator/human00/human_teleport"
 
-SUPPORT_TELEPORT_TOPIC = "/canopies_simulator/robot01/moving_base/teleport"
+SUPPORT_TELEPORT_TOPIC = "/canopies_simulator/logistics/moving_base/teleport"
+
+BEM_ROBOT_SERVICE = "/canopies_simulator/farming/BEM_service"
+BEM_SUPPORT_SERVICE = "/canopies_simulator/logistics/BEM_service"
 
 GREY = "\033[90m"  # Grey for logdebug
 GREEN = "\033[92m"  # Green for loginfo
@@ -65,6 +69,8 @@ class SimInterface:
         self.human_pose_teleport_srv_proxy = rospy.ServiceProxy(
             HUMAN_TELEPORT_SERVICE, teleport_human
         )
+        self.robot_bem_service = rospy.ServiceProxy(BEM_ROBOT_SERVICE, BEM)
+        self.support_bem_service = rospy.ServiceProxy(BEM_SUPPORT_SERVICE, BEM)
 
         rospy.loginfo(GREEN + "Sim Interface Node Initialized" + RESET)
 
@@ -155,7 +161,7 @@ class SimInterface:
         self.support_pose = Pose()
         self.support_pose.position.x = 100.0
         self.support_pose.position.y = 100.0
-        self.support_pose.position.z = self.initial_pose.position.z
+        self.support_pose.position.z = 0.18868
         self.support_pose.orientation = self.initial_pose.orientation
         rospy.sleep(1)
         self.support_pose_teleport_publisher.publish(self.support_pose)
@@ -186,7 +192,8 @@ class SimInterface:
             rospy.logerr(f"{RED}Invalid name{_name}{RESET}")
 
         rospy.set_param(
-            "canopies_simulator/joint_group_velocity_controller/joints", self.names
+            "canopies_simulator/farming/joint_group_velocity_controller/joints",
+            self.names,
         )
         return
 
@@ -197,7 +204,7 @@ class SimInterface:
         now = rospy.Time.now()
         while rospy.Time.now() < now + rospy.Duration.from_sec(control_loop_time):
             joint_state = rospy.wait_for_message(
-                "canopies_simulator/joint_states", JointState, 10
+                "canopies_simulator/farming/joint_states", JointState, 10
             )
 
             # Calculation of new velocities for every joint
@@ -243,10 +250,12 @@ class SimInterface:
         return
 
     def call_support(self, action_args):
-        location, _ = action_args
-        location = self.location_mapper_dict[location]
-        self.support_pose.position.x = location[0] - 0.95
-        self.support_pose.position.y = location[1]
+        _ = action_args
+        robot_pose = rospy.wait_for_message(ODOMETRY_TOPIC, Odometry)
+        self.support_pose.position.x = robot_pose.pose.pose.position.x
+        self.support_pose.position.y = robot_pose.pose.pose.position.y - 1.65
+        self.support_pose.position.z = robot_pose.pose.pose.position.z
+        self.support_pose.orientation.w *= -1
 
         self.support_pose_teleport_publisher.publish(self.support_pose)
         return
@@ -259,9 +268,7 @@ class SimInterface:
         self.do_control_loop([-0.7, 0.3])
         self.do_control_loop([0.7, 0.3])
         self.do_control_loop([0.0, 0.0])
-        _ = action_args
-
-        pass
+        return
 
     def harvest_grape(self, action_args):
         _ = action_args
@@ -269,15 +276,35 @@ class SimInterface:
         self.init_parameter_server("right")
         self.do_control_loop([0.78, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0], 100)
         self.do_control_loop([1.2, -1.043, -1.0, -1.243, 1.0, 1.25, 1.0], 100)
-        self.do_control_loop([0.9, 1.043, -1.0, -1.443, -1.24, -0.47, 1.0], 100)
-        self.do_control_loop([-0.98, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0], 100)
         return
 
     def drop_grape(self, action_args):
-        pass
+        _ = action_args
+
+        self.init_parameter_server("right")
+        self.do_control_loop([0.9, 1.043, -1.0, -1.443, -1.24, -0.47, 1.0], 100)
+        self.do_control_loop([-0.98, 1.4679, 1.143, 1.7095, 0.0, 1.3898, 0.0], 100)
 
     def empty_box(self, action_args):
-        pass
+        _ = action_args
+
+        # had to do like this cause os simulator's limitations
+        command = "rosservice call /canopies_simulator/logistics/BEM_service \"action: 'exchange'\" & rosservice call /canopies_simulator/farming/BEM_service \"action: 'exchange'\""
+        subprocess.Popen(
+            command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        rospy.sleep(6)
+
+        # move support to initial position
+        self.support_pose = Pose()
+        self.support_pose.position.x = 100.0
+        self.support_pose.position.y = 100.0
+        self.support_pose.position.z = 0.18868
+        self.support_pose.orientation = self.initial_pose.orientation
+        rospy.sleep(1)
+        self.support_pose_teleport_publisher.publish(self.support_pose)
+
+        return
 
     def handle_exception(self, action_args):
         location = action_args[0]

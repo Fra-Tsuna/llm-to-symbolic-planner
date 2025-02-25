@@ -98,10 +98,17 @@ class Parser:
         return action_msg
 
     def drop_grape(self, action_args):
-        pass
+        _, grape, box, location = action_args
+        action_msg = StringList()
+        action_msg.data = ["drop_grape", grape, box, location]
+        return action_msg
     
     def empty_box(self, action_args):
-        pass
+        ":parameters (?r - robot ?supp - robot ?b - box ?from - location)"
+        _, supp, box, location = action_args
+        action_msg = StringList()
+        action_msg.data = ["empty_box", supp, box, location]
+        return action_msg
 
     def handle_exception(self, action_args):
         _, location = action_args
