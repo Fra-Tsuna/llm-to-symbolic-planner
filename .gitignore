@@ -6,6 +6,7 @@ __pycache__/
 results/
 planning_old/
 config/PDDL/
+plan_simulation_pkg/config/PDDL/
 
 # C extensions
 *.so
