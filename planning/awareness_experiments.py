@@ -59,7 +59,7 @@ questions_dict = {
 }
 
 
-def main(n_exp: int = 15) -> None:
+def main(n_exp: int = 30) -> None:
     
     extractor_kwargs = {"fluents": gt_fluents, "objects": gt_objects}
     extractor = FluentsExtractor(**extractor_kwargs)

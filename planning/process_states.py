@@ -138,8 +138,6 @@ def evaluate_metric(
     if category == "Current_action":
         #Equation 1 in the paper
         real_states = get_current_state(plan_so_far_returned)
-        print("Real states: ", real_states)
-        print("Extracted fluents: ", extracted_fluents)
         intersection = real_states & extracted_fluents
         union = real_states | extracted_fluents
         gamma_present = len(intersection) / len(union) 

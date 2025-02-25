@@ -10,7 +10,7 @@ categories = [
 ]
 
 
-def main(n_exp: int = 15) -> None:
+def main(n_exp: int = 30) -> None:
     for category in categories:
         result_dir = f"results/{category}"
 
