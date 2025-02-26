@@ -18,6 +18,7 @@
     (robot-at rob l0)
     (robot-at support0 l0)
     (support support0)
+    (logistic rob)
     (grape-at g0 l0)
     (grape-at g1 l1)
     (grape-at g2 l2)

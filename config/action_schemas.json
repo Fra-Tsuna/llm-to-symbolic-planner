@@ -11,8 +11,16 @@
         "add_set": "(empty ?3)",
         "del_set": "(full ?3)"
     },
-    "check_grape": {
-        "add_set": "(ripe ?2),(unripe ?2),(unknown)",
+    "check_grape_rp": {
+        "add_set": "(ripe ?2)",
+        "del_set": "(unchecked ?3)"
+    },
+    "check_grape_ur": {
+        "add_set": "(unripe ?2)",
+        "del_set": "(unchecked ?3)"
+    },
+    "check_grape_uk": {
+        "add_set": "(unknown)",
         "del_set": "(unchecked ?3)"
     },
     "harvest_grape": {

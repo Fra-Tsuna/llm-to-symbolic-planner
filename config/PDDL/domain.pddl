@@ -5,6 +5,7 @@
               (grape-at ?g - grape ?loc - location)
               (free ?r - robot)
               (support ?s - robot)
+              (logistic ?l - robot)
               (in_hand ?g - grape)
               (full ?b - box)
               (in ?b - box ?r - robot)
@@ -25,7 +26,7 @@
 
     (:action move
         :parameters (?r - robot ?from - location ?to - location)
-        :precondition (and (robot-at ?r ?from) (adj ?from ?to) (cleared ?from))
+        :precondition (and (robot-at ?r ?from) (adj ?from ?to) (cleared ?from) (logistic ?r))
         :effect (and (robot-at ?r ?to) (not (robot-at ?r ?from))
               (move_executed)
               (not(call_support_executed))
@@ -40,7 +41,7 @@
 
     (:action call_support
         :parameters (?r - robot ?at - location ?supp - robot ?from - location)
-        :precondition (and (support ?supp) (robot-at ?r ?at) (robot-at ?supp ?from))
+        :precondition (and (support ?supp) (robot-at ?r ?at) (robot-at ?supp ?from) (logistic ?r))
         :effect (and (robot-at ?supp ?at) (not (robot-at ?supp ?from))
               (not(move_executed))
               (call_support_executed)
@@ -56,7 +57,7 @@
     (:action empty_box
         :parameters (?r - robot ?supp - robot ?b - box ?from - location)
         :precondition (and (support ?supp) (in ?b ?r) (robot-at ?r ?from)
-                        (robot-at ?supp ?from) (full ?b))
+                        (robot-at ?supp ?from) (full ?b) (logistic ?r))
         :effect (and (not (full ?b)) (empty ?b)
         (not(move_executed))
               (not(call_support_executed))
@@ -71,7 +72,7 @@
 
     (:action check_grape
         :parameters (?r - robot ?g - grape ?from - location)
-        :precondition (and (robot-at ?r ?from) (grape-at ?g ?from) (unchecked ?from))
+        :precondition (and (robot-at ?r ?from) (grape-at ?g ?from) (unchecked ?from) (logistic ?r))
         :effect (and (oneof (ripe ?g) (unknown) (unripe ?g)) (not (unchecked ?from))
         (not(move_executed))
               (not(call_support_executed))
@@ -87,7 +88,7 @@
     (:action harvest_grape
         :parameters (?r - robot ?g - grape ?b - box ?from - location)
         :precondition (and (ripe ?g) (free ?r) (robot-at ?r ?from)
-                      (grape-at ?g ?from) (empty ?b) (in ?b ?r))
+                      (grape-at ?g ?from) (empty ?b) (in ?b ?r) (logistic ?r))
         :effect (and (not (free ?r)) (in_hand ?g) (not (grape-at ?g ?from))
               (not(move_executed))
               (not(call_support_executed))
@@ -102,7 +103,7 @@
 
     (:action drop_grape
         :parameters (?r - robot ?g - grape ?b - box ?from - location)
-        :precondition (and (in_hand ?g) (in ?b ?r) (robot-at ?r ?from))
+        :precondition (and (in_hand ?g) (in ?b ?r) (robot-at ?r ?from) (logistic ?r))
         :effect (and (inside ?g ?b) (not (in_hand ?g)) (cleared ?from)(free ?r)
         (not(move_executed))
               (not(call_support_executed))
@@ -117,7 +118,7 @@
 
     (:action handle_exception  ; the meaning of this action is to call human to handle unexpect behaviours
         :parameters (?r - robot ?from - location)
-        :precondition (and (robot-at ?r ?from) (unknown))
+        :precondition (and (robot-at ?r ?from) (unknown) (logistic ?r))
         :effect (and (cleared ?from) (not (unknown))
         (not(move_executed))
               (not(call_support_executed))
@@ -132,7 +133,7 @@
 
     (:action assest_vine
         :parameters (?r - robot ?g - grape ?from - location)
-        :precondition (and (unripe ?g) (robot-at ?r ?from) (grape-at ?g ?from))
+        :precondition (and (unripe ?g) (robot-at ?r ?from) (grape-at ?g ?from) (logistic ?r))
         :effect (and (cleared ?from)
         (not(move_executed))
               (not(call_support_executed))

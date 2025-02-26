@@ -1,0 +1,11 @@
+rob - robot
+support0 - robot
+l0 - location
+l1 - location
+l2 - location
+l3 - location
+g0 - grape
+g1 - grape
+g2 - grape
+g3 - grape
+b - box

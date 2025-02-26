@@ -21,7 +21,7 @@ def main(n_exp: int = 30) -> None:
             with open(output_file, "r") as file:
                 results = json.load(file)
 
-            gammas = results["gamma"]
+            gammas = results["gamma_average"]
             gammas_list.append(gammas)
 
         with open(f"{result_dir}/results.txt", "w") as file:

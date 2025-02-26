@@ -9,6 +9,7 @@ INIT_STATE = [
     "(robot-at rob l0)",
     "(robot-at support0 l0)",
     "(support support0)",
+    "(logistic rob)",
     "(grape-at g0 l0)",
     "(grape-at g1 l1)",
     "(grape-at g2 l2)",
@@ -86,97 +87,83 @@ def remove_fluents(state, del_set):
 def get_next_state(state, action):
     action, add_set, del_set = process_action(action)
 
-    state=add_fluents(state, add_set)
-    state=remove_fluents(state, del_set)
+    state = add_fluents(state, add_set)
+    state = remove_fluents(state, del_set)
 
     return state
 
 
-def get_current_state(plan_so_far):
+def get_current_state(plan_so_far, gt_plan):
     state = INIT_STATE.copy()
     state = set(state)
-
-    for action in plan_so_far:
-        state=get_next_state(state, action)
+    for i in range(len(plan_so_far)):
+        action = plan_so_far[i]
+        if "check_grape" in action:
+            next_action = gt_plan[i + 1]
+            if "handle_exception" in next_action:
+                action = action.replace("check_grape", "check_grape_uk")
+            elif "assest_vine" in next_action:
+                action = action.replace("check_grape", "check_grape_ur")
+            else:
+                action = action.replace("check_grape", "check_grape_rp")
+        state = get_next_state(state, action)
 
     return set(state)
 
 
-def get_future_states(plan_so_far, plan):
-    state = INIT_STATE.copy()
-    state = set(state)
-
-    for action in plan_so_far:
-        get_next_state(state, action)
-
-    states = [state]
-    last_action = plan_so_far[-1]
-    last_action_index = plan.index(last_action)
-
-    for action in plan[last_action_index + 1 :]:
-        get_next_state(state, action)
-        states.append(state)
-
-    return set(states)
-
-
-def get_past_states(plan_so_far):
-    state = INIT_STATE.copy()
-    state = set(state)
-
-    states = [state]
-    for action in plan_so_far:
-        get_next_state(state, action)
-        states.append(state)
-
-    return set(states)
-
-
-def evaluate_metric(
-    plan_so_far_returned, extracted_fluents, category
-):
+def evaluate_metric(plan_so_far_returned, extracted_fluents, category):
+    gt_states = []
+    gammas = []
+    gt_plan = load_plan(PLAN_PATH)
+    
     if category == "Current_action":
-        #Equation 1 in the paper
-        real_states = get_current_state(plan_so_far_returned)
+        # Equation 1 in the paper
+        real_states = get_current_state(plan_so_far_returned, gt_plan)
         intersection = real_states & extracted_fluents
+        gt_states.append(list(real_states))
         union = real_states | extracted_fluents
-        gamma_present = len(intersection) / len(union) 
-        return gamma_present
+        gamma = len(intersection) / len(union)
+        gammas.append(gamma)
 
     elif category == "Past_actions":
-        #Equation 2 in the paper
+        # Equation 2 in the paper
         cumulative_plan = []
         gamma_past = 0.0
         t = 0
         for action in plan_so_far_returned:
             cumulative_plan.append(action)
-            real_states = get_current_state(cumulative_plan)
+            real_states = get_current_state(cumulative_plan, gt_plan)
+            gt_states.append(list(real_states))
             intersection = real_states & extracted_fluents
             union = real_states | extracted_fluents
-            gamma_past += len(intersection) / len(union)
-            t+=1
-        gamma_past = gamma_past / t
-        return gamma_past
-    
+            gamma_ = len(intersection) / len(union)
+            gamma_past += gamma_
+            gammas.append(gamma_)
+            t += 1
+        gamma = gamma_past / t
+
     elif category == "Future_actions":
-        #Equation 3 in the paper
-        gt_plan = load_plan(PLAN_PATH)
-        T = len(gt_plan)
+        # Equation 3 in the paper
         t = len(plan_so_far_returned)
         cumulative_plan = plan_so_far_returned.copy()
         gamma_future = 0.0
         i = 0
         for action in gt_plan[t:]:
-            real_states = get_current_state(cumulative_plan)
+            real_states = get_current_state(cumulative_plan, gt_plan)
+            gt_states.append(list(real_states))
             intersection = real_states & extracted_fluents
             union = real_states | extracted_fluents
-            gamma_future += len(intersection) / len(union)
+            gamma_ = len(intersection) / len(union)
+            gamma_future += gamma_
+            gammas.append(gamma_)
             cumulative_plan.append(action)
-            i+=1
-        gamma_future = gamma_future / i
-        return gamma_future
+            i += 1
+        gamma = gamma_future / i
     else:
         raise ValueError("Invalid category")
+
+    return gamma, gammas, gt_states
+
 
 def simulate_plan(plan, question, question_probability=0.25):
     p = question_probability

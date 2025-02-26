@@ -5,9 +5,6 @@ import random
 from GPT_Agents import FluentsExtractor
 from process_states import (
     evaluate_metric,
-    get_current_state,
-    get_future_states,
-    get_past_states,
     load_plan,
     simulate_plan,
 )
@@ -86,13 +83,15 @@ def main(n_exp: int = 30) -> None:
             extracted_fluents = extractor(system_response)
             extracted_fluents = set(extracted_fluents.split(","))
 
-            gamma = evaluate_metric(psf_returned, extracted_fluents, category)
+            gamma, gammas, gt_fluents_in_states = evaluate_metric(psf_returned, extracted_fluents, category)
 
             results = {}
             results["user_question"] = question
             results["system_response"] = system_response
             results["extracted_fluents"] = list(extracted_fluents)
-            results["gamma"] = gamma
+            results["gt_fluents"] = gt_fluents_in_states
+            results["gammas"] = gammas
+            results["gamma_average"] = gamma
 
             output_file = f"{output_dir}/output.json"
             with open(output_file, "w") as file:
