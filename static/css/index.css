@@ -83,7 +83,11 @@ td {
 }
 
 
-.publication-title {}
+.publication-title {
+  max-width: 800px;
+  margin: auto;
+  white-space: nowrap;
+}
 
 .publication-banner {
   max-height: parent;

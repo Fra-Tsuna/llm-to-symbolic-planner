@@ -1,5 +1,5 @@
 # Auto conversion to OS line endings
 * text=auto
-
 # It ensures UNIX-style line endings for some files
 *.sh text eol=lf
+*.mp4 filter=lfs diff=lfs merge=lfs -text
