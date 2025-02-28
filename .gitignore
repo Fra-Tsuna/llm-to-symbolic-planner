@@ -7,7 +7,7 @@ results/
 planning_old/
 config/PDDL/
 plan_simulation_pkg/config/PDDL/
-
+planner-for-relevant-policies/
 # C extensions
 *.so
 
