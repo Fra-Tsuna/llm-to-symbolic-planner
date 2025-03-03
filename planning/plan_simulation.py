@@ -1,10 +1,9 @@
-import random
 import select
 import sys
 
 import rich
-from GPT_Agents import FluentsExtractor, GPTChat
-from process_states import evaluate_metric, get_current_state, load_plan
+from GPT_Agents import GPTChat
+from process_states import load_plan
 
 console = rich.console.Console()
 
@@ -65,21 +64,3 @@ if __name__ == "__main__":
     plan = load_plan(plan_path)
     system_response, plan_so_far = test_simulate_plan(plan, waiting_time)
     console.print(f"[bold green]SYSTEM: [/bold green] {system_response}")
-
-    ### DEBUG 
-    # extractor = FluentsExtractor()
-
-    # fluents = extractor(system_response)
-    # fluents = fluents.split(",")
-
-    # current_state = get_current_state(plan_so_far)
-
-    # print("FLUENTS:")
-    # for fluent in fluents:
-    #     print(f"{fluent}\n")
-
-    # print("CURRENT STATE:")
-    # for fluent in current_state:
-    #     print(f"{fluent}\n")
-
-    # print(evaluate_metric(current_state, fluents))
