@@ -112,17 +112,25 @@ def get_current_state(plan_so_far, gt_plan):
 
 
 def evaluate_metric(plan_so_far_returned, extracted_fluents, category):
-    gt_states = []
+    gamma = 0.0
     gammas = []
+    gt_states = []
+    soundness_ = []
+    correct_list = []
+    missing_list = []
+    hallucination_list = []
+    union_list = []
+    histogram = []
     gt_plan = load_plan(PLAN_PATH)
-    
+
     if category == "Current_action":
         # Equation 1 in the paper
         real_states = get_current_state(plan_so_far_returned, gt_plan)
         intersection = real_states & extracted_fluents
         gt_states.append(list(real_states))
-        union = real_states | extracted_fluents
-        gamma = len(intersection) / len(union)
+        gamma = len(intersection) / len(real_states)
+        soundness_.append(len(intersection) / len(extracted_fluents))
+        soundness = sum(soundness_) / len(soundness_)
         gammas.append(gamma)
 
     elif category == "Past_actions":
@@ -135,34 +143,59 @@ def evaluate_metric(plan_so_far_returned, extracted_fluents, category):
             real_states = get_current_state(cumulative_plan, gt_plan)
             gt_states.append(list(real_states))
             intersection = real_states & extracted_fluents
-            union = real_states | extracted_fluents
-            gamma_ = len(intersection) / len(union)
+            gamma_ = len(intersection) / len(real_states)
             gamma_past += gamma_
             gammas.append(gamma_)
+            soundness_.append(len(intersection) / len(extracted_fluents))
+            correct_list.append(len(intersection))
+            missing_list.append(len(real_states.difference(extracted_fluents)))
+            hallucination_list.append(len(extracted_fluents.difference(real_states)))
+            union_list.append(len(real_states.union(extracted_fluents)))
             t += 1
         gamma = gamma_past / t
+        histogram = {
+            "correct": correct_list,
+            "missing": missing_list,
+            "hallucinations": hallucination_list,
+            "union": union_list,
+            "zero": len(plan_so_far_returned),
+        }
+        soundness = sum(soundness_) / len(soundness_)
 
     elif category == "Future_actions":
         # Equation 3 in the paper
         t = len(plan_so_far_returned)
-        cumulative_plan = plan_so_far_returned.copy()
+        cumulative_plan = plan_so_far_returned[:]
         gamma_future = 0.0
         i = 0
         for action in gt_plan[t:]:
             real_states = get_current_state(cumulative_plan, gt_plan)
             gt_states.append(list(real_states))
             intersection = real_states & extracted_fluents
-            union = real_states | extracted_fluents
-            gamma_ = len(intersection) / len(union)
-            gamma_future += gamma_
+            gamma_ = len(intersection) / len(real_states)
             gammas.append(gamma_)
+            gamma_future += gamma_
+            soundness_.append(len(intersection) / len(extracted_fluents))
+            correct_list.append(len(intersection))
+            missing_list.append(len(real_states.difference(extracted_fluents)))
+            hallucination_list.append(len(extracted_fluents.difference(real_states)))
+            union_list.append(len(real_states.union(extracted_fluents)))
+            
             cumulative_plan.append(action)
             i += 1
         gamma = gamma_future / i
+        histogram = {
+            "correct": correct_list,
+            "missing": missing_list,
+            "hallucinations": hallucination_list,
+            "union": union_list,
+            "zero": len(plan_so_far_returned),
+        }
+        soundness = sum(soundness_) / len(soundness_)
     else:
         raise ValueError("Invalid category")
 
-    return gamma, gammas, gt_states
+    return gamma, gammas, soundness, histogram, gt_states
 
 
 def simulate_plan(plan, question, question_probability=0.25):

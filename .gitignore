@@ -11,6 +11,10 @@ planner-for-relevant-policies/
 # C extensions
 *.so
 
+# others
+*.png
+*.zip
+
 # Distribution / packaging
 .Python
 build/

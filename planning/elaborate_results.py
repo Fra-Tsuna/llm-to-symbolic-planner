@@ -1,6 +1,8 @@
 import json
 import os
 
+import matplotlib.pyplot as plt
+
 import numpy as np
 
 categories = [
@@ -23,16 +25,17 @@ def main(n_exp: int = 30) -> None:
 
             gammas = results["gamma_average"]
             gammas_list.append(gammas)
-
+    
         with open(f"{result_dir}/results.txt", "w") as file:
             for gamma in gammas_list:
                 file.write(f"{gamma}\n")
-
+                
         gammas_average = np.mean(gammas_list)
         gammas_std = np.std(gammas_list)
 
         print(f"Category: {category}\n")
         print(f"Gamma statistics: {gammas_average:.2f} +- {gammas_std:.2f}\n")
+        
 
 
 if __name__ == "__main__":

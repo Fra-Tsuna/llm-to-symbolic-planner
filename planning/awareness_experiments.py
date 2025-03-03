@@ -83,15 +83,17 @@ def main(n_exp: int = 30) -> None:
             extracted_fluents = extractor(system_response)
             extracted_fluents = set(extracted_fluents.split(","))
 
-            gamma, gammas, gt_fluents_in_states = evaluate_metric(psf_returned, extracted_fluents, category)
+            gamma, gammas, soundness, histogram, gt_fluents_in_states = evaluate_metric(psf_returned, extracted_fluents, category)
 
             results = {}
             results["user_question"] = question
             results["system_response"] = system_response
             results["extracted_fluents"] = list(extracted_fluents)
-            results["gt_fluents"] = gt_fluents_in_states
-            results["gammas"] = gammas
+            # results["gt_fluents"] = gt_fluents_in_states
             results["gamma_average"] = gamma
+            results["gammas"] = gammas
+            results["soundness"] = soundness
+            results["histogram"] = histogram
 
             output_file = f"{output_dir}/output.json"
             with open(output_file, "w") as file:
