@@ -10,7 +10,7 @@
 <sup>1</sup> Department of Computer, Control and Management Engineering, Sapienza University of Rome, Italy
 <div>
 
-[![arxiv paper](https://img.shields.io/badge/Project-Website-blue)]()
+[![arxiv paper](https://img.shields.io/badge/Project-Website-blue)](https://fra-tsuna.github.io/human-aware-robot-planning/)
 [![arxiv paper](https://img.shields.io/badge/About-CANOPIES-green)](https://canopies.inf.uniroma3.it/)
 [![arxiv paper](https://img.shields.io/badge/arXiv-TBA-red)]()
 [![license](https://img.shields.io/badge/License-GPLv3.0-yellow)](LICENSE)
