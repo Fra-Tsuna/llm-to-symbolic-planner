@@ -1,5 +1,5 @@
 <div align="center">
-<h1 style="font-size: 20px">Human-Robot Awareness <br> in Collaborative Scenarios &#x1F347; <br> 
+<h1 style="font-size: 20px">Human-Robot Awareness in<br> Collaborative Scenarios &#x1F347; <br> 
 Combining LLMs and Symbolic Reasoning</h1>
 <img src="assets/canopies.png" width=80%>
 <br>
