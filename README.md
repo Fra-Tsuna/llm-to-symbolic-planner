@@ -1,7 +1,7 @@
 <div align="center">
-<h1 style="font-size: 25px">Human-Robot Awareness in Collaborative Scenarios &#x1F347;</h1> 
-<h2 style="font-size: 25px">Combining LLMs and Symbolic Reasoning</h2>
-<img src="assets/canopies.png" width=40%>
+<h1 style="font-size: 20px">Human-Robot Awareness in Collaborative Scenarios &#x1F347; <br> 
+Combining LLMs and Symbolic Reasoning</h1>
+<img src="assets/canopies.png" width=60%>
 <br>
 <a href="https://www.linkedin.com/in/fra-arg/">Francesco Argenziano</a><sup><span>1</span></sup>,
 <a href="https://scholar.google.com/citations?user=W1KV32kAAAAJ&hl=it&oi=ao/">Elena Umili</a><sup><span>1</span></sup>,
