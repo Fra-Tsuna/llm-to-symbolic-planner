@@ -157,7 +157,7 @@ python3 planning/plan_simulation.py
 ```
 The user has a window of 10 seconds after every robot action to make any kind of questions to the system and observe its response.
 
-To reproduce the experiments of the paper on the awareness, run
+To reproduce the experiments of the paper, run
 ```
 python3 planning/awareness_experiments.py --n_exp 30
 ```
