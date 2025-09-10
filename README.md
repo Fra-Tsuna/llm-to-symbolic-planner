@@ -1,6 +1,5 @@
 <div align="center">
-<h1 style="font-size: 20px">Human-Robot Awareness in<br> Collaborative Scenarios &#x1F347; <br> 
-Combining LLMs and Symbolic Reasoning</h1>
+<h1 style="font-size: 30px">Defining and Monitoring Complex Robot Activities via LLMs and Symbolic Reasoning</h1>
 <img src="assets/canopies.png" width=80%>
 <br>
 <a href="https://www.linkedin.com/in/fra-arg/">Francesco Argenziano</a><sup><span>1</span></sup>,
