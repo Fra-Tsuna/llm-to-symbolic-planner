@@ -11,7 +11,7 @@
 <sup>1</sup> Department of Computer, Control and Management Engineering, Sapienza University of Rome, Italy
 <div>
 
-[![arxiv paper](https://img.shields.io/badge/Project-Website-blue)](https://fra-tsuna.github.io/human-aware-robot-planning/)
+[![arxiv paper](https://img.shields.io/badge/Project-Website-blue)](https://fra-tsuna.github.io/llm-to-symbolic-planner/)
 [![arxiv paper](https://img.shields.io/badge/About-CANOPIES-green)](https://canopies-project.eu/)
 [![arxiv paper](https://img.shields.io/badge/arXiv-TBA-red)]()
 [![license](https://img.shields.io/badge/License-GPLv3.0-yellow)](LICENSE)
@@ -22,7 +22,7 @@
 ## Prerequisites
 Clone this repo and its submodule
 ```
-git clone --recurse-submodules https://github.com/Fra-Tsuna/human-aware-robot-planning.git
+git clone --recurse-submodules https://github.com/Fra-Tsuna/llm-to-symbolic-planner.git
 ```
 Install the necessary Python dependencies:
 ```
@@ -104,8 +104,8 @@ run_experiments.py:
     (default: 'rer_prompt_augmented_2.txt')
 ```
 
-## Planning and Process Awareness
-All the scripts to run the Planning and Process Awareness are in the `planning/` directory
+## Planning and Process
+All the scripts to run the Planning and Process are in the `planning/` directory
 
 ### Usage
 To integrate the LTLf goal inside the planning domain, run:
@@ -159,5 +159,5 @@ The user has a window of 10 seconds after every robot action to make any kind of
 
 To reproduce the experiments of the paper, run
 ```
-python3 planning/awareness_experiments.py --n_exp 30
+python3 planning/experiments.py --n_exp 30
 ```
