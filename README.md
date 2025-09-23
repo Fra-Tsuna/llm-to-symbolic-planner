@@ -13,7 +13,7 @@
 
 [![arxiv paper](https://img.shields.io/badge/Project-Website-blue)](https://fra-tsuna.github.io/llm-to-symbolic-planner/)
 [![arxiv paper](https://img.shields.io/badge/About-CANOPIES-green)](https://canopies-project.eu/)
-[![arxiv paper](https://img.shields.io/badge/arXiv-TBA-red)]()
+[![arxiv paper](https://img.shields.io/badge/arXiv-pdf-red)](https://arxiv.org/pdf/2509.16006)
 [![license](https://img.shields.io/badge/License-GPLv3.0-yellow)](LICENSE)
 
 </div>
